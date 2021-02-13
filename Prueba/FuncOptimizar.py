@@ -141,7 +141,7 @@ def MallaDatos(x,y,z):
 
 #Programa principal
 #Se ingresa el archivo
-f = DefinirRuta('ab2_1.dat') 
+f = DefinirRuta('AnomOpt.dat') 
 
 #f1 = DefinirRuta('Resultados.dat')
 
@@ -152,7 +152,7 @@ M = LeerOpt(f,1)
 #M1 = LeerOpt(f1,2)#Se pone 1 si se quiere saltar el primer renglon
 
 #Para graficar datos 1d:
-grafDatos1d(M[:,0], M[:,1], 'SEV', 'x[m]', 'Rho aparente')
+grafDatos1d(M[:,0], M[:,1], 'Anomalia', 'x[m]', 'Delta G')
 
 #Para graficar datos 2d:
 #x, y, z = MallaDatos(M[:,0], M[:,1], M[:,2])

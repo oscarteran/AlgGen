@@ -117,7 +117,7 @@ program AG_fxy
    call cpu_time(t1)
 
    ! Directorio de resultados:
-   DirRes='/home/alejandro/Desktop/IDGB/P_Final/DirResl/AlgGen/Prueba/'
+   DirRes='/home/alejandro/Desktop/IDGB/P_Final/AlgGen/Prueba/DirResl/'
 
    !-----------------------------------------------------------------------------------------------!
    !                                    FUNCIÓN POR OPTIMIZAR
@@ -142,34 +142,33 @@ program AG_fxy
    !                      PARÁMETROS CONTROLADORES DEL ALGORITMO GENÉTICO
    !-----------------------------------------------------------------------------------------------!
    ! Parámetros Generales:
-   Q = 50_il                              ! Tamaño de población
+   Q = 1000_il                              ! Tamaño de población
    M = 12_il                               ! Número de parámetros, dependiendo de la inversión
-   Pc = 0.8_dp                            ! Probabilidad de cruza (Cte: 90%)
+   Pc = 0.9_dp                            ! Probabilidad de cruza (Cte: 90%)
    Pm = 0.1_dp                           ! Probabilidad de mutación (Cte: 5%)
    NGen = 10000_il                        ! Número máximo de generaciones
    Tol = 0.01_dp                         ! Tolerancia (c/R al error)
    !-----------------------------------------------------------------------------------------------!
-   ! Número de bits para la codificación binaria:
-   write(chBits, '(b0)') mMax
-   Bits = len_trim(chBits) !Porque marcas error?
-   NBits = sum(Bits) 
+   
    
    ! Inicialización del generador de números aleatorios:
    call init_random_seed()
     
-   allocate(pMin(M), pMax(M), dm(M), mMax(M), chBits(M))
+   allocate(pMin(M), pMax(M), dm(M), mMax(M), chBits(M), Bits(M))
    ! Espacio discreto de modelos:
       !Gravimetria
-   pMin = [0.05_dp, 0.15_dp, 20._dp, -3500._dp, &
-   	   0.1_dp, 0.35_dp, 20._dp, 1500._dp, &
-   	   0.25_dp, 0.7_dp, 20._dp, 2000._dp]!posiciones de los minimos
+   pMin = [5._dp, 150._dp, 20._dp, -3500._dp, &
+   	   10._dp, 334._dp, 20._dp, 1500._dp, &
+   	   25._dp, 667._dp, 20._dp, 2000._dp]!posiciones de los minimos
    
-   pMax = [0.1_dp, 0.2_dp, 80._dp, -1500._dp, &
-   	 0.2_dp, 0.40_dp, 80._dp, 3500._dp, &
-   	  0.45_dp, 0.8_dp, 80._dp, 4000._dp]!posiciones de los maximos
+   pMax = [10._dp, 333._dp, 80._dp, -1500._dp, &
+   	 20._dp, 666._dp, 80._dp, 3500._dp, &
+   	  45._dp, 900._dp, 80._dp, 4000._dp]!posiciones de los maximos
    
-   dm = 30.01_dp
+   
+   dm = 100.01_dp
    mMax = nint((pMax-pMin)/dm+1)
+   
    !suma total de los posibles parametros
    allocate(EspM(maxval(mMax),M))	  
    EspM=0._dp
@@ -179,6 +178,10 @@ program AG_fxy
       end do
    end do
    
+   ! Número de bits para la codificación binaria:
+   write(chBits, '(b0)') mMax
+   Bits = len_trim(chBits) !Porque marcas error?
+   NBits = sum(Bits) 
    !-----------------------------------------------------------------------------------------------!
    !  INICIO DEL ALGORITMO:
    !-----------------------------------------------------------------------------------------------!
@@ -240,9 +243,9 @@ program AG_fxy
          ! Respuesta de los individuos al medio:
          !Medio Gravimetria
          do it =1,N
-         Zest(it) = CilindroG(DatX(it), Gen(i,1), Gen(i,2), Gen(i,3), Gen(1,4)) + &
-         	CilindroG(DatX(it), Gen(i,5), Gen(i,6), Gen(i,7), Gen(i,8)) + &
-         	EsferaG(DatX(it), Gen(i,9), Gen(i,10), Gen(i,11), Gen(i,12))
+         Zest(it) = CilindroG((DatX(it)*1000), Gen(i,1), Gen(i,2), Gen(i,3), Gen(1,4)) + &
+         	CilindroG((DatX(it)*1000), Gen(i,5), Gen(i,6), Gen(i,7), Gen(i,8)) + &
+         	EsferaG((DatX(it)*1000), Gen(i,9), Gen(i,10), Gen(i,11), Gen(i,12))
          end do
          !Zest = f(Gen(i,1), Gen(i,2))
 	

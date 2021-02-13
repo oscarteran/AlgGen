@@ -171,15 +171,15 @@ program AG_fxy
    !pMax = [0.01_dp, 0.200_dp, 0.080_dp, 10000._dp, &
    !    0.010_dp, 0.400_dp, 0.080_dp, 15000._dp, &
    !     0.020_dp, 0.775_dp, 0.080_dp, 35000._dp]!posiciones de los maximos
-   pMin = [0.01_dp, 0.180_dp, 0.020_dp, -2500._dp, &
+   pMin = [0.01_dp, 0.180_dp, 0.012_dp, -3500._dp, &
          0.02_dp, 0.370_dp, 0.020_dp, 600._dp, &
-         0.05_dp, 0.740_dp, 0.040_dp, 500._dp]!posiciones de los minimos
+         0.05_dp, 0.750_dp, 0.050_dp, 500._dp]!posiciones de los minimos
    
    pMax = [0.06_dp, 0.200_dp, 0.080_dp, -1500._dp, &
        0.05_dp, 0.400_dp, 0.080_dp, 3500._dp, &
-        0.07_dp, 0.760_dp, 0.080_dp, 2500._dp]!posiciones de los maximos
+        0.07_dp, 0.780_dp, 0.080_dp, 2000._dp]!posiciones de los maximos
    
-   dm = 3.0_dp
+   dm = 30.0_dp
    mMax = nint((pMax-pMin)/dm+1)
    
    !suma total de los posibles parametros

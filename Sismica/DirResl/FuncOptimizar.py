@@ -48,7 +48,7 @@ def mallaCuadrada(Min,Max):
 def GrafContorno(x,y,z): #falta poner los datos 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.set(title = 'Anomalía magnética', xlabel = 'x[Km]', ylabel = 'y[km]')
+    ax.set(title = 'Residual Anomalía magnética', xlabel = 'x[Km]', ylabel = 'y[km]')
     cs = ax.contourf(x,y,z)
     c =fig.colorbar(cs)
     plt.show()
@@ -127,12 +127,23 @@ def grafComp1d(x,y,x1,y1,title,xlabel,ylabel):
         ax.set(title = title, xlabel = xlabel, ylabel = ylabel, xscale = 'log')
     else:
         ax.set(title = title, xlabel = xlabel, ylabel = ylabel, xscale = 'linear')
-    ax.plot(x, y, c = 'r',label= 'Datos Reales')
-    ax.plot(x1, y1, c = 'b' ,label= 'Datos Invertidos')
+    ax.scatter(x, y, marker='v', c = 'r',label = 'Datos Reales')
+    ax.scatter(x1, y1, marker='.', c = 'b' ,label = 'Datos Invertidos')
     plt.legend()
     plt.grid()
     plt.show()
 	
+def grafResiduales1d(x,y,x1,y1,r,title,xlabel,ylabel):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    ax.set(title = title, xlabel = xlabel, ylabel = ylabel, xscale = 'linear')
+    ax.plot(x, y, c = 'r',label = 'Datos Reales')
+    ax.plot(x1, y1, c = 'b' ,label = 'Datos Invertidos')
+    #ax.plot(x1, r, c = 'g' ,label = 'Residuales')
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 def MallaDatos(x,y,z):
     for i in range(len(x)):
@@ -150,7 +161,13 @@ def MallaDatos(x,y,z):
     x.shape=(Nx,Nx)
     y.shape=(Ny,Ny)
     z.shape=(Nx,Ny)
-    return x,y,z    
+    return x,y,z 
+
+#Residuales
+def Residuales(Dobs,Dinv):
+    Res = np.zeros(len(Dobs))
+    Res = Dobs-Dinv
+    return Res
 
 
 
@@ -162,17 +179,33 @@ f = DefinirRuta('AnomOpt.dat') #Invertida
 #Lectura de datos
 M = LeerOpt(f1,2)
 M1 = LeerOpt(f,2)
- 
+
+#Residuales 1D
+R = Residuales(M[:,1], M1[:,1]) 
+
+#Residuales 2D
+#R = Residuales(M[:,2], M1[:,2])
 
 #M1 = LeerOpt(f1,2)#Se pone 1 si se quiere saltar el primer renglon
 
 #Para graficar datos 1d:
-#grafDatos1d(M[:,0], M[:,1], 'SEV', 'ab/2[m]', 'Rho Aparente')
+#grafDatos1d(M[:,0], M[:,1], 'Anomalia', 'x[km]', 'Delta_g [mGal]')
+
 #Para comparar resultados:
-grafComp1d(M[:,0],M[:,1],M1[:,0],M1[:,1],'Sismograma','Tiempo[ms]','Distancia[m]')
+#grafComp1d(M[:,0],M[:,1],M1[:,0],M1[:,1],'Sismograma','t[s]','x[m]')
+
+#Para graficar residuales:
+grafResiduales1d(M[:,0],M[:,1],M1[:,0],M1[:,1],R,'Sismograma','Tiempo[s]','Distancias[m]')
 
 #Para graficar datos 2d:
 #x, y, z = MallaDatos(M[:,0], M[:,1], M[:,2])
+#GrafContorno(x, y, z)
+    
+#x, y, z = MallaDatos(M1[:,0], M1[:,1], M1[:,2])
+#GrafContorno(x, y, z)
+
+#Para residuales en 2d:
+#x, y, z = MallaDatos(M[:,0], M[:,1], R)
 #GrafContorno(x, y, z)
 #Para curva de convergencia
 #grafCurvConv(M[:,0],M[:,1])

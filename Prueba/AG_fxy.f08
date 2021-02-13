@@ -117,7 +117,7 @@ program AG_fxy
    call cpu_time(t1)
 
    ! Directorio de resultados:
-   DirRes='/home/alejandro/Desktop/IDGB/P_Final/DirResl/'
+   DirRes='/home/alejandro/Desktop/IDGB/P_Final/DirResl/AlgGen/Prueba/'
 
    !-----------------------------------------------------------------------------------------------!
    !                                    FUNCIÓN POR OPTIMIZAR
@@ -149,11 +149,40 @@ program AG_fxy
    NGen = 10000_il                        ! Número máximo de generaciones
    Tol = 0.01_dp                         ! Tolerancia (c/R al error)
    !-----------------------------------------------------------------------------------------------!
-
+   ! Número de bits para la codificación binaria:
+   write(chBits, '(b0)') mMax
+   Bits = len_trim(chBits) !Porque marcas error?
+   NBits = sum(Bits) 
+   
+   ! Inicialización del generador de números aleatorios:
+   call init_random_seed()
+    
+   allocate(pMin(M), pMax(M), dm(M), mMax(M), chBits(M))
+   ! Espacio discreto de modelos:
+      !Gravimetria
+   pMin = [0.05_dp, 0.15_dp, 20._dp, -3500._dp, &
+   	   0.1_dp, 0.35_dp, 20._dp, 1500._dp, &
+   	   0.25_dp, 0.7_dp, 20._dp, 2000._dp]!posiciones de los minimos
+   
+   pMax = [0.1_dp, 0.2_dp, 80._dp, -1500._dp, &
+   	 0.2_dp, 0.40_dp, 80._dp, 3500._dp, &
+   	  0.45_dp, 0.8_dp, 80._dp, 4000._dp]!posiciones de los maximos
+   
+   dm = 30.01_dp
+   mMax = nint((pMax-pMin)/dm+1)
+   !suma total de los posibles parametros
+   allocate(EspM(maxval(mMax),M))	  
+   EspM=0._dp
+   do i=1,M
+      do j=1,mMax(i)
+         EspM(j,i)=pmin(i)+(j-1)*dm(i)
+      end do
+   end do
+   
    !-----------------------------------------------------------------------------------------------!
    !  INICIO DEL ALGORITMO:
    !-----------------------------------------------------------------------------------------------!
-   call init_random_seed()
+   allocate(Zest(N))
    allocate(Gen(Q,M), GenOpt(M), IndGen(Q,M), phi(Q)) !Porque marcas error
    allocate(randM(M), Ind(M))
    allocate(Pr(Q), GenP(Q,M), IndGenP(Q,M), randQ(Q))
@@ -161,20 +190,7 @@ program AG_fxy
    allocate(character(NBits) :: tempB1, tempB2, tempB1H, tempB2H)
    allocate(tempGeni(M), tempGenj(M), tempiGeni(M), tempiGenj(M))
    allocate(cont1(Q))
-   allocate(pMin(M), pMax(M), dm(M), mMax(M), chBits(M))
-      ! Espacio discreto de modelos:
-      !Gravimetria
-   pMin = [0.05_dp, 0.15_dp, 20._dp, -3500._dp, &
-   	   0.1_dp, 0.35_dp, 20._dp, 1500._dp, &
-   	   0.25_dp, 0.7_dp, 20._dp, 2000._dp]!posiciones de los minimos
-   pMax = [0.1_dp, 0.2_dp, 80._dp, -1500._dp, &
-   	 0.2_dp, 0.40_dp, 80._dp, 3500._dp, &
-   	  0.45_dp, 0.8_dp, 80._dp, 4000._dp]!posiciones de los maximos
-
-   dm = 30.01_dp
-   mMax = nint((pMax-pMin)/dm+1)
-   !suma total de los posibles parametros
-   allocate(EspM(maxval(mMax),M))
+   
    !open(newunit=unit2, file=trim(DirRes)//'Resultados.dat', status='replace', action='write')
    
    Gen=0._dp                ! Arreglo 2D para almacenar los "Q" modelos
@@ -184,21 +200,13 @@ program AG_fxy
    phim=1000._dp            ! Valor inicial de error mínimo global (se actualizará solo)
    phii=1000._dp            ! Valor inicial de error mínimo de c/generación (se actualizará solo)
    !-----------------------------------------------------------------------------------------------!
-   ! Inicialización del generador de números aleatorios:
+   
    
 
 
-   EspM=0._dp
-   do i=1,M
-      do j=1,mMax(i)
-         EspM(j,i)=pmin(i)+(j-1)*dm(i)
-      end do
-   end do
+   
 
-   ! Número de bits para la codificación binaria:
-   !write(chBits, '(b0)') mMax
-   Bits = len_trim(chBits) !Porque marcas error?
-   NBits = sum(Bits)
+  
 
    ! Almacenamiento de la curva de convergencia en archivo ASCII:
    !WRITE (filename, fmt='(a,I0,a)') &
@@ -210,7 +218,7 @@ program AG_fxy
    !  CICLO SOBRE EL NÚMERO MÁXIMO DE GENERACIONES (O HASTA ALCANZAR LA TOLERANCIA ESTABLECIDA)
    !-----------------------------------------------------------------------------------------------!
    iGen=1
-
+   
    do while (iGen <= NGen)
       !Respuesta de la población al medio:
       do i=1,Q
@@ -547,5 +555,6 @@ program AG_fxy
    !write(unit2,*) Nava, iGen-1, Zopt, GenOpt(1), GenOpt(2), t2-t1
 !end do
 !close(unit2)
+
 end program AG_fxy
 !--------------------------------------------------------------------------------------------------!

@@ -19,7 +19,7 @@
 # Variables:
 CF = gfortran
 OC = -Wall -O3 -Wno-uninitialized -g -fcheck=all -Wall
-DE = /home/alejandro/Desktop/IDGB/P_Final/AlgGen/Prueba
+DE = /home/oscar/Escritorio/AlgGen/Prueba
 
 DExec = DirExe
 DComp = DirComp

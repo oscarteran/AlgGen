@@ -3,13 +3,36 @@
 Spyder Editor
 
 Este es un programa en Python que sirve para la visualizacion de los datos
+Sirve para ver:
+    -Curvas de convergencia
+    -Superficies aproximadas
+    -Datos Geofísicos: Para esto hay que definir si los aarchivos traen encabezado o no
+    
 Si, le dedique más esfuerzo que el que le debí haber dedicado.
 """
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
+import math
+import pandas as pd
 
+#Funciones no propias:
+def truncate(number, decimals=0):
+    """
+    Returns a value truncated to a specific number of decimal places.
+    """
+    if not isinstance(decimals, int):
+        raise TypeError("decimal places must be an integer.")
+    elif decimals < 0:
+        raise ValueError("decimal places has to be 0 or more.")
+    elif decimals == 0:
+        return math.trunc(number)
+
+    factor = 10.0 ** decimals
+    return math.trunc(number * factor) / factor
+
+#Funciones propias:
 def Esferica(x,y):
     return x ** 2+y**2
 
@@ -25,8 +48,8 @@ def mallaCuadrada(Min,Max):
 def GrafContorno(x,y,z): #falta poner los datos 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    
-    cs = ax.contourf(x,y,z)
+    ax.set(title = 'Anomalía magnética', xlabel = 'x[Km]', ylabel = 'y[km]')
+    cs = ax.contour(x,y,z)
     c =fig.colorbar(cs)
     plt.show()
     
@@ -93,32 +116,56 @@ def grafDatos1d(x,y,title,xlabel,ylabel):
         ax.set(title = title, xlabel = xlabel, ylabel = ylabel, xscale = 'log')
     else:
         ax.set(title = title, xlabel = xlabel, ylabel = ylabel, xscale = 'linear')
-    ax.scatter(x,y,marker='.')
+    ax.scatter(x, y, marker='.')
     plt.show()
-    
-#def grafDatos2d(x,y,z,title,xlabel,ylabel):
 
+def MallaDatos(x,y,z):
+    for i in range(len(x)):
+        dx= truncate(np.abs(x[i+1]-x[i]),5)
+        if (dx != 0):
+            break
+    for i in range(len(y)):
+        dy= truncate(np.abs(y[i+1]-y[i]),5)
+        if (dy != 0):
+            break
+    
+    Nx = int(((np.max(x) - np.min(x)) / (dx)) + 1)
+    Ny = int(((np.max(y) - np.min(y)) / (dy)) + 1)
+    
+    x.shape=(Nx,Nx)
+    y.shape=(Ny,Ny)
+    z.shape=(Nx,Ny)
+    return x,y,z    
+
+
+
+#Programa principal
 #Se ingresa el archivo
-f = DefinirRuta('CurvaConv24.dat') #curva de convergencia
-f1 = DefinirRuta('Resultados.dat')
+f = DefinirRuta('ab2_1.dat') 
+
+#f1 = DefinirRuta('Resultados.dat')
 
 #Lectura de datos
-M = LeerOpt(f,2)
-M1 = LeerOpt(f1,2)#Se pone 1 si se quiere saltar el primer renglon
+M = LeerOpt(f,1)
+
+
+#M1 = LeerOpt(f1,2)#Se pone 1 si se quiere saltar el primer renglon
 
 #Para graficar datos 1d:
-#grafDatos1d(M[:,0], M[:,1], 'Perfil', 't[s]', 'x[m]')
+grafDatos1d(M[:,0], M[:,1], 'SEV', 'x[m]', 'Rho aparente')
+
 #Para graficar datos 2d:
-    
+#x, y, z = MallaDatos(M[:,0], M[:,1], M[:,2])
+#GrafContorno(x, y, z)
 #Para curva de convergencia
-grafCurvConv(M[:,0],M[:,1])
+#grafCurvConv(M[:,0],M[:,1])
 
 #Análisis de rendimiento:
 #[x,y]=mallaCuadrada(-5.12, 5.12) #Rastrigin
-[x,y]=mallaCuadrada(-5, 5) #Esférica
+#[x,y]=mallaCuadrada(-5, 5) #Esférica
 #Esferica
-z=Esferica(x, y)
+#z=Esferica(x, y)
 #Rastrigin
 #z=Rastrigin(x, y)
 
-grafSuperficie(x, y, z, M1[:,3], M1[:,4], M1[:,2])
+#grafSuperficie(x, y, z, M1[:,3], M1[:,4], M1[:,2])

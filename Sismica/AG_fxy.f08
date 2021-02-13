@@ -53,7 +53,7 @@ program AG_fxy
    
    real(dp), allocatable, dimension(:):: pMin, pMax, dm, phi, randM, Pr, randQ, NAPr, GenOpt,     &
                                          tempGeni, tempGenj, DatX, DatY, tconv, f, Zobs, Zest,  &
-                                         Zopti, Zopt
+                                         Zopti, Zopt, aux, aux2
    
    real(dp), allocatable, dimension(:,:):: EspM, Gen, GenP, GenRep, Dat
    
@@ -88,12 +88,14 @@ program AG_fxy
    !-----
    
    !Lectura de datos:
-   Dat = readMat('AnomG_1.dat')
+   Dat = readMat('Sismg_1.dat')
+   !Para lectura en 1d
    DatX = Dat(:,1)
    Zobs = Dat(:,2)
+
    N = size(Dat,1) 
    
-   !Lectura de Datos 2D
+   !Lectura de Datos 2D (descomentar y comentar Zobs = Dat(:,2))
    !DatY = Dat(:,2)
    !Zobs = Dat(:,3)
 
@@ -102,9 +104,15 @@ program AG_fxy
    !----- Anomalía Gravimetrica: 12 Parametros
    !Zobs = CilindroG(x,a,xc,zc,rho)+CilindroG(x,a,xc,zc,Rho) + EsferaG(x,a,xc,zc,Rho)
    !----- Anomalia Magnetica: 
-   !Zobs = EsferaM(x,y,x,y,z,a,mi,md,mg)
+   !Zobs = EsferaM(x,y,xc,yc,zc,ac,mi,md,mg)
    !----- Sismica
    !Zobs = conv1d(tconv,Ricker,'same')
+   !Ondícula de Ricker, donde f va a ser el calor de dicha ondícula:
+   !allocate(tconv(N))
+   !tconv =0._dp 
+   
+   call Ricker(25._dp,tconv,f)
+   
    !----- Eléctrica
    !Zobs = SEV(ab2,m,3)
    
@@ -117,7 +125,7 @@ program AG_fxy
    call cpu_time(t1)
 
    ! Directorio de resultados:
-   DirRes='/home/alejandro/Desktop/IDGB/P_Final/AlgGen/Prueba/DirResl/'
+   DirRes='/home/alejandro/Desktop/IDGB/P_Final/AlgGen/Sismica/DirResl/'
 
    !-----------------------------------------------------------------------------------------------!
    !                                    FUNCIÓN POR OPTIMIZAR
@@ -142,8 +150,8 @@ program AG_fxy
    !                      PARÁMETROS CONTROLADORES DEL ALGORITMO GENÉTICO
    !-----------------------------------------------------------------------------------------------!
    ! Parámetros Generales:
-   Q = 200_il                              ! Tamaño de población
-   M = 12_il                               ! Número de parámetros, dependiendo de la inversión
+   Q = 100_il                              ! Tamaño de población
+   M = 7_il                               ! Número de parámetros, dependiendo de la inversión
    Pc = 1._dp                            ! Probabilidad de cruza (Cte: 90%)
    Pm = 0.1_dp                           ! Probabilidad de mutación (Cte: 5%)
    NGen = 10000_il                        ! Número máximo de generaciones
@@ -157,16 +165,23 @@ program AG_fxy
    allocate(pMin(M), pMax(M), dm(M), mMax(M), chBits(M), Bits(M))
    ! Espacio discreto de modelos:
       !Gravimetria
-   pMin = [0.01_dp, 0.170_dp, 0.020_dp, -2000._dp, &
-   	   0.02_dp, 0.360_dp, 0.020_dp, 600._dp, &
-   	   0.05_dp, 0.710_dp, 0.020_dp, 500._dp]!posiciones de los minimos
+   !pMin = [5._dp, 100._dp, 20._dp, -350._dp, &
+   !	   10._dp, 330._dp, 20._dp, 150._dp, &
+   !	   25._dp, 600._dp, 20._dp, 200._dp]!posiciones de los minimos
    
-   pMax = [0.06_dp, 0.200_dp, 0.080_dp, -1500._dp, &
-   	 0.05_dp, 0.400_dp, 0.080_dp, 3500._dp, &
-   	  0.07_dp, 0.850_dp, 0.080_dp, 3500._dp]!posiciones de los maximos
+   !pMax = [10._dp, 300._dp, 80._dp, -150._dp, &
+   !	 20._dp, 450._dp, 80._dp, 350._dp, &
+   !	  45._dp, 900._dp, 80._dp, 4000._dp]!posiciones de los maximos
    
+   !-----Magnetometria
+   !pMin = [-0.3_dp, 1.3_dp, 0.20_dp, 0.050_dp, 30._dp, 1._dp, 0.1_dp]
+   !pMax = [0.3_dp, 3.3_dp, 1.00_dp, 1.00_dp, 50._dp, 10._dp, 0.2_dp] 
    
-   dm = 3.0_dp
+   !-----Sísmica
+   pMin = [-4._dp, -2._dp, -0.5_dp, 4._dp, -4._dp, 0._dp, 1._dp]
+   pMax = [-2._dp, -1._dp, 0._dp, 5._dp, -3._dp, -1._dp, 2._dp]
+   
+   dm = 10._dp
    mMax = nint((pMax-pMin)/dm+1)
    
    !suma total de los posibles parametros
@@ -215,6 +230,7 @@ program AG_fxy
    !WRITE (filename, fmt='(a,I0,a)') &
    !'/home/alejandro/Desktop/IDGB/P_Final/DirResl/CurvaConv',Nava,'.dat'
    !OPEN (UNIT = unit1, FILE=filename, STATUS = 'REPLACE', action='write')
+   open(NewUnit=unit1,file=trim(DirRes)//'CurvaConv.dat',status='replace',action='write')
    !-----------------------------------------------------------------------------------------------!
 
    !-----------------------------------------------------------------------------------------------!
@@ -242,19 +258,32 @@ program AG_fxy
 
          ! Respuesta de los individuos al medio:
          !Medio Gravimetria
-         do it =1,N
-         Zest(it) = CilindroG(DatX(it), Gen(i,1), Gen(i,2), Gen(i,3), Gen(1,4)) + &
-         	CilindroG(DatX(it), Gen(i,5), Gen(i,6), Gen(i,7), Gen(i,8)) + &
-         	EsferaG(DatX(it), Gen(i,9), Gen(i,10), Gen(i,11), Gen(i,12))
-         end do
+         !do it =1,N
+         !Zest(it) = CilindroG((DatX(it)*1000), Gen(i,1), Gen(i,2), Gen(i,3), Gen(1,4)) + &
+         !	CilindroG((DatX(it)*1000), Gen(i,5), Gen(i,6), Gen(i,7), Gen(i,8)) + &
+         !	EsferaG((DatX(it)*1000), Gen(i,9), Gen(i,10), Gen(i,11), Gen(i,12))
+         !end do
+         
+         !Medio Magnetometría
+         !do it = 1,N
+         !	Zest(it) = EsferaM(DatX(it),DatY(it),Gen(i,1),Gen(i,2),Gen(i,3),Gen(i,4),Gen(i,5),Gen(i,6),Gen(i,7))
+         !end do 
          !Zest = f(Gen(i,1), Gen(i,2))
+         
+         !Medio Sísmica
+         aux = [Gen(i,1), Gen(i,2), Gen(i,3), Gen(i,4), Gen(i,5), Gen(i,6), Gen(i,7)]
+         aux2 = ModR(aux)
+         Zest = conv1d(aux, f, 'same')
 	
-	!= cilindro()+cilindro()+esfera()
-	!gen->(i,12)
 	
-	!vector zestimada
+	
+		 != cilindro()+cilindro()+esfera()
+		 !gen->(i,12)
+	
+		 !vector zestimada
          ! Cálculo del desajuste:
-         phi(i) = norm2(Zobs - Zest)
+         !phi(i) = norm2(Zobs - Zest)
+         phi(i) = sqrt(sum((Zobs-Zest)**2))
 
          ! Búsqueda del individuo más apto de la generación actual:
          if (iGen == 1) then
@@ -281,7 +310,7 @@ program AG_fxy
       end do
 
       ! Convergencia (iGen vs phi):
-      !write(unit1,*) iGen, phim
+      write(unit1,*) iGen, phim
       !--------------------------------------------------------------------------------------------!
 
       !Criterio de detención del algoritmo:
@@ -440,15 +469,26 @@ program AG_fxy
 
          ! Respuesta de los individuos al medio:
          !Zest = f(Gen(i,1),Gen(i,2))
+         
          !Medio Gravimétrico:
-         do it =1,N
-         Zest(it) = CilindroG(DatX(it), Gen(i,1), Gen(i,2), Gen(i,3), Gen(1,4)) + &
-         	CilindroG(DatX(it), Gen(i,5), Gen(i,6), Gen(i,7), Gen(i,8)) + &
-         	EsferaG(DatX(it), Gen(i,9), Gen(i,10), Gen(i,11), Gen(i,12))
-         end do
+         !do it =1,N
+         !Zest(it) = CilindroG(DatX(it), Gen(i,1), Gen(i,2), Gen(i,3), Gen(1,4)) + &
+         !	CilindroG(DatX(it), Gen(i,5), Gen(i,6), Gen(i,7), Gen(i,8)) + &
+         !	EsferaG(DatX(it), Gen(i,9), Gen(i,10), Gen(i,11), Gen(i,12))
+         !end do
+         
+         !Medio Magnetometría
+         !do it = 1,N
+         !	Zest(it) = EsferaM(DatX(it),DatY(it),Gen(i,1),Gen(i,2),Gen(i,3),Gen(i,4),Gen(i,5),Gen(i,6),Gen(i,7))
+         !end do
+         !Medio Sísmica
+         aux = [Gen(i,1), Gen(i,2), Gen(i,3), Gen(i,4), Gen(i,5), Gen(i,6), Gen(i,7)]
+         aux2 = ModR(aux)
+         Zest = conv1d(aux, f, 'same')
 
          ! Cálculo del desajuste:
-         phi(i) = norm2(Zobs - Zest)
+         !phi(i) = norm2(Zobs - Zest)
+         phi(i) = sqrt(sum((Zobs-Zest)**2))
       end do
 
       ! Orden de la nueva población c/r al desajuste (menor a mayor):
@@ -501,7 +541,7 @@ program AG_fxy
       iGen=iGen+1
    end do
 
-   !close(unit1)
+   close(unit1)
 
    ! Se detiene el cronómetro:
    call cpu_time(t2)
@@ -515,7 +555,7 @@ program AG_fxy
 
    open(NewUnit=unit3,file=trim(DirRes)//'AnomOpt.dat',status='replace',action='write')
    do i=1,N
-      write(unit3,*) DatX(i), Zopt(i)
+      write(unit3,*) DatX(i), DatY(i), Zopt(i)
    end do
    close(unit3)
 

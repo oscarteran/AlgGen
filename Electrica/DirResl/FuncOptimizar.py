@@ -129,8 +129,8 @@ def grafComp1d(x,y,x1,y1,title,xlabel,ylabel):
         ax.set(title = title, xlabel = xlabel, ylabel = ylabel, xscale = 'linear')
     ax.scatter(x, y, marker='v', c = 'r',label= 'Datos Reales')
     ax.scatter(x1, y1, marker='.', c = 'b' ,label= 'Datos Invertidos')
-    plt.legend()
     plt.grid()
+    plt.legend(loc='upper right')
     plt.show()
 	
 
@@ -156,7 +156,7 @@ def MallaDatos(x,y,z):
 
 #Programa principal
 #Se ingresa el archivo
-f1 = DefinirRuta('AnomG_1.dat') #Datos observados
+f1 = DefinirRuta('ab2_1.dat') #Datos observados
 f = DefinirRuta('AnomOpt.dat') #Invertida
 
 #Lectura de datos
@@ -169,7 +169,7 @@ M1 = LeerOpt(f,2)
 #Para graficar datos 1d:
 #grafDatos1d(M[:,0], M[:,1], 'SEV', 'ab/2[m]', 'Rho Aparente')
 #Para comparar resultados:
-grafComp1d(M[:,0],M[:,1],M1[:,0],M1[:,1],'Anomalia Gravimetrica','x[km]','DeltaG[mGal]')
+grafComp1d(M[:,0],M[:,1],M1[:,0],M1[:,1],'SEV','ab/2[m]','Rho Aparente')
 
 #Para graficar datos 2d:
 #x, y, z = MallaDatos(M[:,0], M[:,1], M[:,2])

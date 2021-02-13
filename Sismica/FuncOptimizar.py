@@ -120,20 +120,6 @@ def grafDatos1d(x,y,title,xlabel,ylabel):
     plt.grid()
     plt.show()
 
-def grafComp1d(x,y,x1,y1,title,xlabel,ylabel):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    if title == 'SEV':
-        ax.set(title = title, xlabel = xlabel, ylabel = ylabel, xscale = 'log')
-    else:
-        ax.set(title = title, xlabel = xlabel, ylabel = ylabel, xscale = 'linear')
-    ax.scatter(x, y, marker='v', c = 'r',label= 'Datos Reales')
-    ax.scatter(x1, y1, marker='.', c = 'b' ,label= 'Datos Invertidos')
-    plt.legend()
-    plt.grid()
-    plt.show()
-	
-
 def MallaDatos(x,y,z):
     for i in range(len(x)):
         dx= truncate(np.abs(x[i+1]-x[i]),5)
@@ -156,24 +142,22 @@ def MallaDatos(x,y,z):
 
 #Programa principal
 #Se ingresa el archivo
-f1 = DefinirRuta('AnomG_1.dat') #Datos observados
-f = DefinirRuta('AnomOpt.dat') #Invertida
+f = DefinirRuta('AnomM_1.xyz') 
+
+#f1 = DefinirRuta('Resultados.dat')
 
 #Lectura de datos
-M = LeerOpt(f1,2)
-M1 = LeerOpt(f,2)
- 
+M = LeerOpt(f,2)
+
 
 #M1 = LeerOpt(f1,2)#Se pone 1 si se quiere saltar el primer renglon
 
 #Para graficar datos 1d:
-#grafDatos1d(M[:,0], M[:,1], 'SEV', 'ab/2[m]', 'Rho Aparente')
-#Para comparar resultados:
-grafComp1d(M[:,0],M[:,1],M1[:,0],M1[:,1],'Anomalia Gravimetrica','x[km]','DeltaG[mGal]')
+#grafDatos1d(M[:,0], M[:,1], 'Anomalia', 'x[m]', 'Delta G')
 
 #Para graficar datos 2d:
-#x, y, z = MallaDatos(M[:,0], M[:,1], M[:,2])
-#GrafContorno(x, y, z)
+x, y, z = MallaDatos(M[:,0], M[:,1], M[:,2])
+GrafContorno(x, y, z)
 #Para curva de convergencia
 #grafCurvConv(M[:,0],M[:,1])
 

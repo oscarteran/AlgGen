@@ -19,7 +19,7 @@
 # Variables:
 CF = gfortran
 OC = -Wall -O3 -Wno-uninitialized -g -fcheck=all -Wall
-DE = /home/alejandro/Desktop/IDGB/P_Final/AlgGen/Sismica
+DE = /home/oscar/Escritorio/AlgGen/Sismica
 
 DExec = DirExe
 DComp = DirComp

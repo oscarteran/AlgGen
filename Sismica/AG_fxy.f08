@@ -125,7 +125,7 @@ program AG_fxy
    call cpu_time(t1)
 
    ! Directorio de resultados:
-   DirRes='/home/alejandro/Desktop/IDGB/P_Final/AlgGen/Sismica/DirResl/'
+   DirRes='/home/oscar/Escritorio/AlgGen/Sismica/DirResl/'
 
    !-----------------------------------------------------------------------------------------------!
    !                                    FUNCIÓN POR OPTIMIZAR
@@ -152,7 +152,7 @@ program AG_fxy
    ! Parámetros Generales:
    Q = 100_il                              ! Tamaño de población
    M = 7_il                               ! Número de parámetros, dependiendo de la inversión
-   Pc = 1._dp                            ! Probabilidad de cruza (Cte: 90%)
+   Pc = 1.0_dp                            ! Probabilidad de cruza (Cte: 90%)
    Pm = 0.1_dp                           ! Probabilidad de mutación (Cte: 5%)
    NGen = 10000_il                        ! Número máximo de generaciones
    Tol = 0.01_dp                         ! Tolerancia (c/R al error)
@@ -178,8 +178,8 @@ program AG_fxy
    !pMax = [0.3_dp, 3.3_dp, 1.00_dp, 1.00_dp, 50._dp, 10._dp, 0.2_dp] 
    
    !-----Sísmica
-   pMin = [-4._dp, -2._dp, -0.5_dp, 4._dp, -4._dp, 0._dp, 1._dp]
-   pMax = [-2._dp, -1._dp, 0._dp, 5._dp, -3._dp, -1._dp, 2._dp]
+   pMin = [-3.5_dp, -1.5_dp, -0.5_dp, 4._dp, -4._dp, -1._dp, 1._dp]
+   pMax = [-2._dp, -1._dp, 0._dp, 5._dp, -3._dp, 0._dp, 2._dp]
    
    dm = 10._dp
    mMax = nint((pMax-pMin)/dm+1)
@@ -273,7 +273,7 @@ program AG_fxy
          !Medio Sísmica
          aux = [Gen(i,1), Gen(i,2), Gen(i,3), Gen(i,4), Gen(i,5), Gen(i,6), Gen(i,7)]
          aux2 = ModR(aux)
-         Zest = conv1d(aux, f, 'same')
+         Zest = conv1d(aux2, f, 'same')
 	
 	
 	
@@ -484,7 +484,7 @@ program AG_fxy
          !Medio Sísmica
          aux = [Gen(i,1), Gen(i,2), Gen(i,3), Gen(i,4), Gen(i,5), Gen(i,6), Gen(i,7)]
          aux2 = ModR(aux)
-         Zest = conv1d(aux, f, 'same')
+         Zest = conv1d(aux2, f, 'same')
 
          ! Cálculo del desajuste:
          !phi(i) = norm2(Zobs - Zest)
@@ -555,7 +555,7 @@ program AG_fxy
 
    open(NewUnit=unit3,file=trim(DirRes)//'AnomOpt.dat',status='replace',action='write')
    do i=1,N
-      write(unit3,*) DatX(i), DatY(i), Zopt(i)
+      write(unit3,*) DatX(i), Zopt(i)
    end do
    close(unit3)
 
